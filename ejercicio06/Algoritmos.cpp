@@ -11,42 +11,23 @@ static void intercambiar(Pelicula& a, Pelicula& b) {
     stats.movimientos++;
 }
 
-// =================== QUICK SORT - AÑO ===================
-static int particionAnio(vector<Pelicula>& peliculas, int inicio, int fin) {
-    stats.particiones++;
-
-    int medio = inicio + (fin - inicio) / 2;
-    intercambiar(peliculas[medio], peliculas[fin]);
-
-    int pivote = peliculas[fin].estreno.anio;
-    int i = inicio - 1;
-
-    for (int j = inicio; j < fin; j++) {
-        stats.comparaciones++;
-
-        if (peliculas[j].estreno.anio <= pivote) {
-            i++;
-            if (i != j) {
-                intercambiar(
-                    peliculas[i],
-                    peliculas[j]
-                );
-            }
-        }
-    }
-
-    intercambiar(peliculas[i + 1], peliculas[fin]);
-
-    return i + 1;
-}
-
+// =================== QUICK SORT - AÑO (partición en 3 vías) ===================
 void quickSortAnio(vector<Pelicula>& peliculas, int inicio, int fin) {
-    if (inicio >= fin)
-        return;
-
-    int pivote = particionAnio(peliculas, inicio, fin);
-    quickSortAnio(peliculas, inicio, pivote - 1);
-    quickSortAnio(peliculas, pivote + 1, fin);
+    while (inicio < fin) {
+        stats.particiones++;
+        int medio = inicio + (fin - inicio) / 2;
+        int pivote = peliculas[medio].estreno.anio;
+        int lt = inicio, i = inicio, gt = fin;
+        while (i <= gt) {
+            stats.comparaciones++;
+            if (peliculas[i].estreno.anio < pivote) { if (i != lt) intercambiar(peliculas[lt], peliculas[i]); lt++; i++; }
+            else if (peliculas[i].estreno.anio > pivote) { intercambiar(peliculas[i], peliculas[gt]); gt--; }
+            else i++;
+        }
+        // recursión sobre la parte menor, iteración sobre la mayor (profundidad O(log n))
+        if (lt - inicio < fin - gt) { quickSortAnio(peliculas, inicio, lt - 1); inicio = gt + 1; }
+        else { quickSortAnio(peliculas, gt + 1, fin); fin = lt - 1; }
+    }
 }
 
 // =================== MERGE SORT - MES ===================
